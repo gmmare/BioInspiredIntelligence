@@ -41,16 +41,16 @@ print(np.mean(scores.history['episode_reward']))
 _ = dqn.test(env, nb_episodes=15, visualize=True)
 
 dqn.save_weights('dqn_weights.h5f', overwrite=True)
-del model
-del dqn
-del env
-
-
-env = gym.make('CartPole-v0')
-actions = env.action_space.n
-states = env.observation_space.shape[0]
-model = build_model(states, actions)
-dqn = build_agent(model, actions)
-dqn.compile(Adam(lr=1e-3), metrics=['mae'])
-dqn.load_weights('dqn_weights.h5f')
-_ = dqn.test(env, nb_episodes=5, visualize=True)
+# del model
+# del dqn
+# del env
+#
+#
+# env = gym.make('CartPole-v0')
+# actions = env.action_space.n
+# states = env.observation_space.shape[0]
+# model = build_model(states, actions)
+# dqn = build_agent(model, actions)
+# dqn.compile(Adam(lr=1e-3), metrics=['mae'])
+# dqn.load_weights('dqn_weights.h5f')
+# _ = dqn.test(env, nb_episodes=5, visualize=True)
