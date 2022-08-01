@@ -1,9 +1,3 @@
-
-
-
-
-
-
 import gym
 import numpy as np
 from tensorflow.keras.models import Sequential, save_model
@@ -13,6 +7,7 @@ from rl.agents import DQNAgent
 from rl.policy import EpsGreedyQPolicy, LinearAnnealedPolicy
 from rl.memory import SequentialMemory
 import random
+import pandas as pd
 
 #setting random seed
 seed = 1
@@ -31,15 +26,15 @@ print("states:", states, "actions:", actions)
 # Setting up hyperparameters
 lr = 1e-3 #learning rate
 limit_test = 50000      #number of frames for each trail
-window_length = 2       #how many frames take up one state
+window_length = 3       #how many frames take up one state
 L1 = 80                 #dense layer nodes: layer 1
 L2 = 60                 #dense layer nodes: layer 2
 L3 = 60                 #dense layer nodes: layer 3
 max_explore = 1         #value for exploration (eps)
-min_explore = 0.4
+min_explore = 0.1
 max_step_trial = 10000  #max amount of steps for each trial
 warm_up_trials = 200    # amount of trials
-training_steps = 50000  # max amount of training runs
+training_steps = 10000  # max amount of training runs
 
 def build_model(states, actions, window_length):
     """
@@ -50,9 +45,9 @@ def build_model(states, actions, window_length):
     model = Sequential()
     model.add(Flatten(input_shape=(window_length,states)))
     model.add(Dense(L1, activation='relu'))         #default is relu
-    model.add(Dense(L2, activation='tanh'))
-    model.add(Dense(L3, activation='tanh'))
-    model.add(Dense(actions, activation='linear'))
+    model.add(Dense(L2, activation='relu'))
+    model.add(Dense(L3, activation='relu'))
+    model.add(Dense(actions, activation='tanh'))
     return model
 
 #instantiate model
@@ -84,17 +79,24 @@ print("start training")
 fit_hist = dqn.fit(env, nb_steps=training_steps, visualize=False, verbose=1)
 
 #testing the agent on a new set
-scores = dqn.test(env, nb_episodes=100, visualize=False)
+scores = dqn.test(env, nb_episodes=20, visualize=False)
 print(np.mean(scores.history['episode_reward']))
 
-# #demo
-# _ = dqn.test(env, nb_episodes=15, visualize=True)
-save_model(dqn, 'dqn_model.h5f', overwrite=True)
+#demo
+# _ = dqn.test(env, nb_episodes=1, visualize=True)
+#closing environment
 
-# change to saving a csv or something
-params = {'window_length': window_length,
-          'limit_test': limit_test,
-          'history': fit_hist}
 
-env.close()
+#saving training data:
+results_dict = {'epochs':fit_hist.epoch,
+                'rewards':fit_hist.history['episode_reward']}
+
+df_results = pd.DataFrame(results_dict)
+df_results.to_csv('learning_results.csv')
+
+#saving the model
+model.save('dqn_model.h5')
+dqn.save_weights('dqn_weights.h5f', overwrite=True)
+
+
 
