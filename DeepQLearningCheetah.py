@@ -6,6 +6,7 @@ from tensorflow.keras.optimizers import Adam
 from rl.agents import DQNAgent
 from rl.policy import EpsGreedyQPolicy, LinearAnnealedPolicy
 from rl.memory import SequentialMemory
+from DeepRLmethods import build_model, build_DQN_agent
 import random
 import pandas as pd
 
@@ -34,44 +35,16 @@ max_explore = 1         #value for exploration (eps)
 min_explore = 0.1
 max_step_trial = 10000  #max amount of steps for each trial
 warm_up_trials = 200    # amount of trials
-training_steps = 10000  # max amount of training runs
-
-def build_model(states, actions, window_length):
-    """
-    :param states:      state space
-    :param actions:     action space
-    :return:            keras deeplearning model
-    """
-    model = Sequential()
-    model.add(Flatten(input_shape=(window_length,states)))
-    model.add(Dense(L1, activation='relu'))         #default is relu
-    model.add(Dense(L2, activation='relu'))
-    model.add(Dense(L3, activation='relu'))
-    model.add(Dense(actions, activation='tanh'))
-    return model
+training_steps = 100000  # max amount of training runs
+L = [L1, L2, L3]
 
 #instantiate model
-model = build_model(states, actions, window_length)
+
+model = build_model(states, actions, window_length, L)
 model.summary() #showing model setup
 
-#creating dqn agent
-def build_agent(model, actions):
-    policy = LinearAnnealedPolicy(EpsGreedyQPolicy(), attr='eps',
-                                  value_max=max_explore,
-                                  value_min=min_explore,
-                                  value_test=.05,
-                                  nb_steps=max_step_trial)
-    memory = SequentialMemory(limit=limit_test, window_length=window_length)
-    dqn = DQNAgent(model=model,
-                   memory=memory,
-                   policy=policy,
-                   nb_actions=actions,
-                   nb_steps_warmup=30,
-                   target_model_update=1e-2)
-    return dqn
-
 #instantiating agent
-dqn = build_agent(model, actions)
+dqn = build_DQN_agent(model, actions)
 dqn.compile(Adam(lr=lr), metrics=['mae'])
 
 #training the data
@@ -84,8 +57,6 @@ print(np.mean(scores.history['episode_reward']))
 
 #demo
 # _ = dqn.test(env, nb_episodes=1, visualize=True)
-#closing environment
-
 
 #saving training data:
 results_dict = {'epochs':fit_hist.epoch,
