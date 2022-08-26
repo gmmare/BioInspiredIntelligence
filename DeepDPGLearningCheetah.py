@@ -58,5 +58,5 @@ results_dict = {'epochs': fit_hist.epoch,
                 'rewards': fit_hist.history['episode_reward']}
 
 df_results = pd.DataFrame(results_dict)
-df_results.to_csv('learning_results_ddpg_cheetah.csv')
+df_results.to_csv('learning_results_ddpg_cheetah0.csv')
 
