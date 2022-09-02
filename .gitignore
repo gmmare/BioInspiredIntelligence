@@ -1,4 +1,5 @@
 /venv/
 /videos/
 /spinningup/
-!/ddpg_succes_nn/
+/dqn_results/
+/ddpg_results/

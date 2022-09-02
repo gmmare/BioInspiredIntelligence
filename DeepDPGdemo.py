@@ -1,33 +1,28 @@
 import gym
-import numpy as np
 from tensorflow.keras.optimizers import Adam
-from DeepRLmethods import build_DDPG_agent
-# from DeepDPGLearningCheetah import build_DDPG_agent
-import matplotlib.pyplot as plt
-import pandas as pd
+from DeepRLmethods import build_DDPG_agent, sensitivity_analysis
+from gym.wrappers import Monitor
 
-#defining the environment
-# env = gym.make('HalfCheetah-v3')
-# env_shape = env.observation_space.shape
+#set to true if you want video recording, for sensitivity analysis, set video to False
+video = False
+
+if video:
+    env = Monitor(gym.make('HalfCheetah-v3'), './video_ddpg', force=True)
+    display_video = False
+else:
+    env = gym.make('HalfCheetah-v3')
+    display_video = True
+env_shape = env.observation_space.shape
 
 
 #building the agent for demo
-# demo_agent = build_DDPG_agent(env=env)
-# demo_agent.compile([Adam(lr=1e-4), Adam(lr=1e-3)], metrics=['mae'])
-# demo_agent.load_weights(filepath='ddpg_{}_weights.h5f'.format("cheetah"))
-# print('done building agent')
-#
-# _ = demo_agent.test(env, nb_episodes=10, visualize=True, verbose=1, nb_max_episode_steps=600)
+ddpg = build_DDPG_agent(env=env)
+ddpg.compile([Adam(lr=1e-4), Adam(lr=1e-3)], metrics=['mae'])
+ddpg.load_weights(filepath='WorkingNets/ddpg_cheetah_weights.h5f')
+print('done building agent')
 
-#plotting results
-df_runsets = pd.DataFrame(columns=['epochs', 'rewards'])
-n_sets = 2
-for i in range(n_sets):
-    learning_hist = pd.read_csv('learning_results_ddpg_cheetah{}.csv'.format(str(i)))
-    df_runsets = pd.concat([df_runsets, learning_hist])
-epochs = df_runsets['epochs']
-rewards = df_runsets['rewards']
+#comment this when doing sensitivity analysis quick results
+# _ = demo_agent.test(env, nb_episodes=1, visualize=display_video, verbose=1, nb_max_episode_steps=600)
 
-
-plt.scatter(epochs, rewards, color="red")
-plt.show()
+#sensitivity analysis results computation
+sensitivity_analysis(env=env, agent=ddpg, n_trials=40)
